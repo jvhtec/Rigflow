@@ -1,2 +1,5 @@
-# Rigflow
-LISP and custom blocks for quick sound rig insertion workflow
+# RigFlow
+
+For complete bilingual documentation, start here:
+
+- [`readme.md`](./readme.md)
