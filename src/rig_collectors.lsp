@@ -292,8 +292,17 @@
   (if addSub
     (progn
       (setq mode *rg-sub-fixed-mode*)
-      (rg:stage "SUBS > MODE"
-                (strcat "Using fixed FLOWN SUB mode " mode "."))
+      (if (not (or (= mode "PAIR") (= mode "SINGLE")))
+        (progn
+          (rg:fail "SUBS > MODE"
+                   (strcat "Invalid *rg-sub-fixed-mode* value: "
+                           (if mode mode "nil")
+                           ". Expected \"PAIR\" or \"SINGLE\"."))
+          (setq mode nil)
+        )
+        (rg:stage "SUBS > MODE"
+                  (strcat "Using fixed FLOWN SUB mode " mode "."))
+      )
       (if mode
         (progn
           (setq boxOffset (rg:get-real-default "SUBS > OFFSET"

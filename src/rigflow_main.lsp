@@ -41,26 +41,39 @@
 ;;; MODULE LOADER
 ;;; ----------------------------
 
-(defun rg:get-module-dir (/ scriptPath dir)
-  ;; Determine the directory containing this file by searching
-  ;; the AutoCAD support file search path for rigflow_main.lsp.
-  (setq scriptPath (findfile "rigflow_main.lsp"))
-  (if scriptPath
+(defun rg:normalize-dir (dir)
+  ;; Normalize a directory path: forward slashes, trailing slash.
+  ;; Inline helper so the loader has no external dependencies.
+  (if (and dir (> (strlen dir) 0))
     (progn
-      (setq dir (vl-filename-directory scriptPath))
-      (if (and dir (> (strlen dir) 0))
-        ;; Normalize to forward slashes and ensure trailing slash
-        (progn
-          (setq dir (vl-string-translate "\\" "/" dir))
-          (if (/= (substr dir (strlen dir) 1) "/")
-            (strcat dir "/")
-            dir
-          )
-        )
-        "./"
+      (setq dir (vl-string-translate "\\" "/" dir))
+      (if (/= (substr dir (strlen dir) 1) "/")
+        (strcat dir "/")
+        dir
       )
     )
-    "./"
+    nil
+  )
+)
+
+(defun rg:get-module-dir (/ scriptPath dir)
+  ;; Determine the directory containing this file.
+  ;; Priority:
+  ;;   1. User-set *rg-module-dir* override (for custom deployments)
+  ;;   2. findfile search (works when folder is in support search path)
+  ;;   3. Fallback to nil (caller must handle)
+  (cond
+    ;; 1. Explicit override
+    ((and (boundp '*rg-module-dir*) *rg-module-dir*)
+      (rg:normalize-dir *rg-module-dir*)
+    )
+    ;; 2. findfile-based detection
+    ((setq scriptPath (findfile "rigflow_main.lsp"))
+      (setq dir (vl-filename-directory scriptPath))
+      (rg:normalize-dir dir)
+    )
+    ;; 3. No path found
+    (T nil)
   )
 )
 
@@ -81,34 +94,56 @@
 
 (defun rg:load-all-modules (/ dir ok)
   (setq dir (rg:get-module-dir))
-  (setq ok T)
-  (princ "\nRIGFLOW: Loading modules...")
-  (foreach mod '("rig_config.lsp"
-                 "rig_utils.lsp"
-                 "rig_blocks.lsp"
-                 "rig_preview.lsp"
-                 "rig_geometry.lsp"
-                 "rig_records.lsp"
-                 "rig_numbering.lsp"
-                 "rig_collectors.lsp")
-    (if (not (rg:load-module dir mod))
-      (setq ok nil)
+  (if (not dir)
+    (progn
+      (princ "\nRIGFLOW ERROR: Cannot determine module directory.")
+      (princ "\n  Set *rg-module-dir* to the folder containing the .lsp files")
+      (princ "\n  before loading rigflow_main.lsp, or add that folder to")
+      (princ "\n  AutoCAD's support file search path.")
+      nil
+    )
+    (progn
+      (setq ok T)
+      (princ (strcat "\nRIGFLOW: Loading modules from " dir))
+      (foreach mod '("rig_config.lsp"
+                     "rig_utils.lsp"
+                     "rig_blocks.lsp"
+                     "rig_preview.lsp"
+                     "rig_geometry.lsp"
+                     "rig_records.lsp"
+                     "rig_numbering.lsp"
+                     "rig_collectors.lsp")
+        (if (not (rg:load-module dir mod))
+          (setq ok nil)
+        )
+      )
+      (if ok
+        (princ "\nRIGFLOW: All modules loaded successfully.")
+        (princ "\nRIGFLOW: WARNING - Some modules failed to load! Check paths above.")
+      )
+      ok
     )
   )
-  (if ok
-    (princ "\nRIGFLOW: All modules loaded successfully.")
-    (princ "\nRIGFLOW: WARNING - Some modules failed to load! Check paths above.")
-  )
-  ok
 )
 
-;;; Load all modules on file load
-(rg:load-all-modules)
+;;; Load all modules on file load and gate command registration
+(setq *rg-load-success* (rg:load-all-modules))
 
 ;;; ----------------------------
 ;;; MAIN COMMAND
 ;;; ----------------------------
 
+(if (not *rg-load-success*)
+  (progn
+    (princ "\nRIGFLOW: Command NOT registered due to module load failure.")
+    (princ "\nRIGFLOW: Fix the errors above and reload rigflow_main.lsp.")
+  )
+)
+
+;; Only define c:RIGFLOW when all modules loaded successfully.
+;; The (if *rg-load-success* ...) wrapper ensures a broken load
+;; does not expose a command that would crash on missing functions.
+(if *rg-load-success*
 (defun c:RIGFLOW
   (/ prefix startNum startNumSave width
      allRecs sortedRecs
@@ -300,12 +335,17 @@
   (setq *error* oldErr)
   (princ)
 )
+) ;; end (if *rg-load-success* (defun c:RIGFLOW ...))
 
 ;;; ----------------------------
 ;;; LOAD BANNER
 ;;; ----------------------------
 
-(princ "\nLoaded RIGFLOW v3.5.6 modular (9-file structure).")
-(rg:append-log "Loaded RIGFLOW v3.5.6 modular (9-file structure).")
-(princ "\nCommand available: RIGFLOW")
+(if *rg-load-success*
+  (progn
+    (princ "\nLoaded RIGFLOW v3.5.6 modular (9-file structure).")
+    (rg:append-log "Loaded RIGFLOW v3.5.6 modular (9-file structure).")
+    (princ "\nCommand available: RIGFLOW")
+  )
+)
 (princ)

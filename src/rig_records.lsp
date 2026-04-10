@@ -33,20 +33,41 @@
   (setq color (rg:rec-color rec))
   (setq ents '())
 
-  (rg:append-log
-    (strcat
-      "PREVIEW | "
-      (rg:rec-role rec) " " (rg:rec-side rec) " " (rg:rec-mode rec)
-      " | PT1=" (rg:pt->str (nth 0 pts))
-      (if (> (length pts) 1)
-        (strcat " | PT2=" (rg:pt->str (nth 1 pts)))
-        "")
+  ;; Validate pts before dereferencing
+  (if (or (not pts) (< (length pts) 1))
+    (progn
+      (rg:append-log
+        (strcat "PREVIEW | SKIP | "
+                (rg:rec-role rec) " " (rg:rec-side rec) " " (rg:rec-mode rec)
+                " | pts list is empty or nil"))
+      (setq ents '())
     )
-  )
+    (if (and (= (rg:rec-mode rec) "PAIR") (< (length pts) 2))
+      (progn
+        (rg:append-log
+          (strcat "PREVIEW | SKIP | "
+                  (rg:rec-role rec) " " (rg:rec-side rec) " " (rg:rec-mode rec)
+                  " | PAIR mode requires 2 points, got " (itoa (length pts))))
+        (setq ents '())
+      )
+      (progn
+        (rg:append-log
+          (strcat
+            "PREVIEW | "
+            (rg:rec-role rec) " " (rg:rec-side rec) " " (rg:rec-mode rec)
+            " | PT1=" (rg:pt->str (nth 0 pts))
+            (if (> (length pts) 1)
+              (strcat " | PT2=" (rg:pt->str (nth 1 pts)))
+              "")
+          )
+        )
 
-  (if (= (rg:rec-mode rec) "PAIR")
-    (setq ents (append ents (rg:preview-pair (nth 0 pts) (nth 1 pts) color)))
-    (setq ents (append ents (rg:preview-single (nth 0 pts) color)))
+        (if (= (rg:rec-mode rec) "PAIR")
+          (setq ents (append ents (rg:preview-pair (nth 0 pts) (nth 1 pts) color)))
+          (setq ents (append ents (rg:preview-single (nth 0 pts) color)))
+        )
+      )
+    )
   )
 
   ents

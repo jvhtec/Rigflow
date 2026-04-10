@@ -45,7 +45,18 @@
   (setq done nil)
   (setq proj nil)
 
-  (if (not dir2d)
+  ;; Validate initRadius before creating any preview geometry
+  (if (or (null radius) (<= radius 0.0))
+    (progn
+      (rg:fail stage
+               (strcat "Invalid initial radius: "
+                       (if radius (rg:fmt-real radius) "nil")
+                       ". Must be a positive number."))
+      (setq done 'SKIP)
+    )
+  )
+
+  (if (and (not done) (not dir2d))
     (progn
       (rg:fail stage "Could not determine a planar reference direction for the outfill circle.")
       (setq done 'SKIP)

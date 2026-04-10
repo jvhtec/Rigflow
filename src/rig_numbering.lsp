@@ -47,15 +47,22 @@
     (while (> (length rest) 1)
       (setq a (car rest))
       (setq b (cadr rest))
-      (if (rg:record< a b)
-        (progn
+      (cond
+        ((rg:record< a b)
+          ;; a belongs before b: emit a, advance
           (setq out (append out (list a)))
           (setq rest (cdr rest))
         )
-        (progn
+        ((rg:record< b a)
+          ;; b belongs before a: swap, keep a in rest for further comparison
           (setq out (append out (list b)))
           (setq rest (append (list a) (cddr rest)))
           (setq changed T)
+        )
+        (T
+          ;; equal records: treat as stable, emit a and advance
+          (setq out (append out (list a)))
+          (setq rest (cdr rest))
         )
       )
     )

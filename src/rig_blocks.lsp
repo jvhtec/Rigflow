@@ -400,7 +400,7 @@
           )
           (rg:stage stage
                     (strcat "Inserted point "
-                            pointName
+                            (if pointName pointName "n/a")
                             " with load "
                             (if pointWeight (rg:fmt-weight pointWeight) "n/a")))
           ref
