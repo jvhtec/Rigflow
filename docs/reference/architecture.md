@@ -34,21 +34,41 @@ RigFlow es un comando AutoLISP (`RIGFLOW`) que automatiza la colocación de bloq
 
 ---
 
-## 3) Core modules in `RIGFLOW_AUDIO_V3_5_6_PRELOADED_BLOCKS.lsp` (EN)
-- Configuration constants (block names, library paths, scaling, tags).
-- Geometry helpers (vectors, normalization, projection/perpendicular helpers).
-- Block availability and insertion pipeline (COM + command fallback).
-- Input loops and yes/no guards.
-- Preview lifecycle (`*rg-persistent-preview-ents*` + clear routine).
-- Final writeback to inserted blocks (attributes + numbering pattern SX01..SX12).
+## 3) Modular file structure (EN)
 
-## 3) Módulos principales en `RIGFLOW_AUDIO_V3_5_6_PRELOADED_BLOCKS.lsp` (ES)
-- Constantes de configuración (nombres de bloques, rutas, escala, tags).
-- Ayudas geométricas (vectores, normalización, proyecciones/perpendiculares).
-- Flujo de disponibilidad e inserción de bloques (COM + fallback por comando).
-- Bucles de entrada y validaciones de sí/no.
-- Ciclo de vida de previsualización (`*rg-persistent-preview-ents*` + rutina de limpieza).
-- Escritura final en bloques insertados (atributos + numeración SX01..SX12).
+The codebase is split into 9 purpose-based modules in `src/`. Only `rigflow_main.lsp` needs to be added to the Startup Suite; it loads all other modules automatically.
+
+| # | File | Responsibility |
+|---|------|---------------|
+| 1 | `rig_config.lsp` | All constants and configuration (`*rg-*` globals) |
+| 2 | `rig_utils.lsp` | Vector math, formatting, logging, generic prompt helpers |
+| 3 | `rig_blocks.lsp` | Block existence, unit conversion, loading, insertion, attributes |
+| 4 | `rig_preview.lsp` | Preview entity creation and lifecycle management |
+| 5 | `rig_geometry.lsp` | Pair generation, circle projection, sub positioning, mirroring |
+| 6 | `rig_records.lsp` | Record structure, accessors, preview/mirror wrappers |
+| 7 | `rig_numbering.lsp` | Role/side ranking, sorting, final insertion with numbering |
+| 8 | `rig_collectors.lsp` | Interactive collection of main, outfill, and flown sub elements |
+| 9 | `rigflow_main.lsp` | Module loader and `c:RIGFLOW` command definition |
+
+Load order follows the dependency chain (1 through 9). The original monolithic file `RIGFLOW_AUDIO_V3_5_6_PRELOADED_BLOCKS.lsp` is retained as a reference.
+
+## 3) Estructura modular de archivos (ES)
+
+El código se divide en 9 módulos por responsabilidad en `src/`. Solo `rigflow_main.lsp` necesita añadirse al Startup Suite; carga todos los demás módulos automáticamente.
+
+| # | Archivo | Responsabilidad |
+|---|---------|----------------|
+| 1 | `rig_config.lsp` | Constantes y configuración (globales `*rg-*`) |
+| 2 | `rig_utils.lsp` | Matemáticas vectoriales, formato, logging, prompts genéricos |
+| 3 | `rig_blocks.lsp` | Existencia de bloques, conversión de unidades, carga, inserción, atributos |
+| 4 | `rig_preview.lsp` | Creación y ciclo de vida de entidades de previsualización |
+| 5 | `rig_geometry.lsp` | Generación de pares, proyección circular, posicionamiento de subs, espejo |
+| 6 | `rig_records.lsp` | Estructura de registros, accesores, wrappers de preview/espejo |
+| 7 | `rig_numbering.lsp` | Ranking de rol/lado, ordenamiento, inserción final con numeración |
+| 8 | `rig_collectors.lsp` | Recolección interactiva de elementos main, outfill y flown subs |
+| 9 | `rigflow_main.lsp` | Cargador de módulos y definición del comando `c:RIGFLOW` |
+
+El orden de carga sigue la cadena de dependencias (1 a 9). El archivo monolítico original `RIGFLOW_AUDIO_V3_5_6_PRELOADED_BLOCKS.lsp` se conserva como referencia.
 
 ---
 
