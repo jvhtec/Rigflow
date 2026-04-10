@@ -5,7 +5,9 @@ This repository contains a production AutoLISP workflow for AutoCAD rigging plac
 
 ### Scope
 - Main command: `RIGFLOW`.
-- Main source file: `RIGFLOW_AUDIO_V3_5_6_PRELOADED_BLOCKS.lsp`.
+- Entry point: `rigflow_main.lsp` (loads all 9 modules automatically).
+- Modular source files in `src/`: `rig_config.lsp`, `rig_utils.lsp`, `rig_blocks.lsp`, `rig_preview.lsp`, `rig_geometry.lsp`, `rig_records.lsp`, `rig_numbering.lsp`, `rig_collectors.lsp`, `rigflow_main.lsp`.
+- Legacy monolithic file: `RIGFLOW_AUDIO_V3_5_6_PRELOADED_BLOCKS.lsp` (retained as reference).
 - Required external blocks: `1T AUDIO.dwg`, `2T AUDIO.dwg`.
 
 ### Guardrails for contributors
@@ -27,7 +29,9 @@ Este repositorio contiene un flujo AutoLISP de producción para colocación de r
 
 ### Alcance
 - Comando principal: `RIGFLOW`.
-- Archivo principal: `RIGFLOW_AUDIO_V3_5_6_PRELOADED_BLOCKS.lsp`.
+- Punto de entrada: `rigflow_main.lsp` (carga los 9 módulos automáticamente).
+- Archivos fuente modulares en `src/`: `rig_config.lsp`, `rig_utils.lsp`, `rig_blocks.lsp`, `rig_preview.lsp`, `rig_geometry.lsp`, `rig_records.lsp`, `rig_numbering.lsp`, `rig_collectors.lsp`, `rigflow_main.lsp`.
+- Archivo monolítico legacy: `RIGFLOW_AUDIO_V3_5_6_PRELOADED_BLOCKS.lsp` (conservado como referencia).
 - Bloques externos requeridos: `1T AUDIO.dwg`, `2T AUDIO.dwg`.
 
 ### Reglas para colaboradores
